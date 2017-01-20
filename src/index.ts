@@ -10,7 +10,7 @@ function distance(p1: Intersection, p2: Intersection): number{
 class Intersection{
     public roads: Road[];
     location: Point;
-    
+
     constructor(x: number, y: number){
         this.roads = [];
         this.location = new Point(x,y);
@@ -44,7 +44,7 @@ class Map {
 }
 
 class Car{
-    currentRoad: Road;
+    constructor(public currentRoad: Road){}
 }
 
 class Main extends createjs.Stage {
