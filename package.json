@@ -18,6 +18,8 @@
   "homepage": "https://github.com/nikital/tsunami#readme",
   "dependencies": {
     "gulp": "^3.9.1",
+    "gulp-shell": "^0.5.2",
+    "gulp-sourcemaps": "^2.4.0",
     "gulp-typescript": "^3.1.4",
     "typescript": "^2.1.5"
   }
