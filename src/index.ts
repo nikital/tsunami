@@ -1,9 +1,16 @@
 type Point = createjs.Point;
 let Point = createjs.Point;
 
+function distance(p1: Intersection, p2: Intersection): number{
+    let dx = p1.location.x - p2.location.x;
+    let dy = p1.location.y - p2.location.y;
+    return Math.sqrt(dx*dx + dy*dy);
+}
+
 class Intersection{
     public roads: Road[];
     location: Point;
+    
     constructor(x: number, y: number){
         this.roads = [];
         this.location = new Point(x,y);
@@ -11,9 +18,19 @@ class Intersection{
 }
 
 class Road {
+    public carCount: number;
+    public carCapacity: number;
+    public enabled: boolean;
+
     constructor (public intersection1: Intersection, public intersection2: Intersection) {
         intersection1.roads.push(this);
         intersection2.roads.push(this);
+        this.carCapacity = distance(this.intersection1,this.intersection2);
+        this.enabled = true;
+    }
+
+    travelTime():number{
+        return 
     }
 }
 
@@ -24,6 +41,10 @@ class City{
 class Map {
     public roads: Road[] = [];
     public cities: City[] = [];
+}
+
+class Car{
+    currentRoad: Road;
 }
 
 class Main extends createjs.Stage {
