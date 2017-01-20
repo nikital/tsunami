@@ -22,10 +22,10 @@ class Road {
     public carCapacity: number;
     public enabled: boolean;
 
-    constructor (public intersection1: Intersection, public intersection2: Intersection) {
-        intersection1.roads.push(this);
-        intersection2.roads.push(this);
-        this.carCapacity = distance(this.intersection1,this.intersection2);
+    constructor (public start: Intersection, public end: Intersection) {
+        start.roads.push(this);
+        end.roads.push(this);
+        this.carCapacity = distance(this.start, this.end);
         this.enabled = true;
     }
 
@@ -44,7 +44,8 @@ class Map {
 }
 
 class Car{
-    constructor(public currentRoad: Road){}
+    constructor(public currentRoad: Road){
+    }
 }
 
 class Main extends createjs.Stage {
@@ -76,8 +77,8 @@ class MapRenderer extends createjs.Shape {
         }
         for (let road of map.roads) {
             g.beginStroke ('black');
-            g.moveTo (road.intersection1.location.x, road.intersection1.location.y);
-            g.lineTo (road.intersection2.location.x, road.intersection2.location.y);
+            g.moveTo (road.start.location.x, road.start.location.y);
+            g.lineTo (road.end.location.x, road.end.location.y);
             g.endStroke ();
         }
     }
