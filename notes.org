@@ -1,0 +1,23 @@
+* Brain storm on Waves:
+
+** Sound waves
+
+*** Rick & Morty (Area 51 Speakers)
+
+**** Emit sound from speakers to pwn heads
+
+**** Be a head and avoid sound from speakers
+
+** Shock Waves
+
+*** Physics destruction game using shock waves
+
+*** "Angry birds" with shockwaves
+
+*** Insane pogo stick
+
+** Ocean waves
+
+*** Wave pool
+
+*** DONE Tsunami hitting coastline and you have to evacuate population
