@@ -16,6 +16,10 @@ gulp.task('build:client', function () {
         .pipe(gulp.dest(path.resolve('./out')))
 });
 
-gulp.task('build', ['build:client']);
+gulp.task('watch:client', ['build:client'], function () {
+	gulp.watch('src/**/*.ts', ['build:client']);
+});
+
+gulp.task('build', ['watch:client']);
 
 gulp.task('default', ['build']);
