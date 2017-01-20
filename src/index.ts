@@ -42,6 +42,13 @@ class Road {
         }
         return this.distance / current_speed;
     }
+
+    public mergeTime():number{
+        if (this.carCapacity > this.carCount){
+            return 0;
+        }
+        return (this.carCount / this.carCapacity) * this.baseTravelTime();
+    }
 }
 
 class City{
@@ -64,6 +71,7 @@ enum CarState{
 class Car{
     timer: number;
     state: CarState;
+    nextRoad: Road;
 
     constructor(public currentRoad: Road){
         this.timer = this.currentRoad.travelTime();
@@ -80,6 +88,8 @@ class Car{
         switch(this.state){
             case CarState.Traveling:
                 //TODO: calculate A* and choose the next road
+                this.nextRoad = new Road(new Intersection(0,0), new Intersection(0,0))
+                timer = 
                 break;
             case CarState.Merging:
                 break;
