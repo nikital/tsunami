@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "noEmitOnError": true,
+        "noImplicitAny": true,
+        "sourceMap": true
+    },
+    "include": [
+        "src/**/*"
+    ]
+}
