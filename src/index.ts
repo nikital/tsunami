@@ -27,7 +27,6 @@ class Road {
 
     constructor (public start: Intersection, public end: Intersection) {
         start.roads.push(this);
-        end.roads.push(this);
         this.distance = distance(this.start, this.end);
         this.enabled = true;
     }
@@ -108,35 +107,44 @@ class MapRenderer extends createjs.Shape {
     }
 }
 
-let ex_graph = new Map ();
+let map = new Map ();
 let intersections = [new Intersection (935/2,100/2),
-                  new Intersection (1370/2,105/2),
-                  new Intersection (1188/2,392/2),
-                  new Intersection (934/2,400/2),
-                  new Intersection (1197/2,645/2),
-                  new Intersection (1587/2,954/2),
-                  new Intersection (663/2,542/2),
-                  new Intersection (664/2,802/2),
-                  new Intersection (892/2,688/2),
-                  new Intersection (405/2,962/2),
-                  new Intersection (908/2,933/2),
-                  new Intersection (1166/2,970/2)];
-ex_graph.roads = [new Road (intersections[1], intersections[0]),
-                  new Road (intersections[1], intersections[2]),
-                  new Road (intersections[0], intersections[3]),
-                  new Road (intersections[2], intersections[3]),
-                  new Road (intersections[5], intersections[4]),
-                  new Road (intersections[4], intersections[2]),
-                  new Road (intersections[3], intersections[6]),
-                  new Road (intersections[6], intersections[7]),
-                  new Road (intersections[8], intersections[4]),
-                  new Road (intersections[8], intersections[7]),
-                  new Road (intersections[7], intersections[9]),
-                  new Road (intersections[7], intersections[10]),
-                  new Road (intersections[8], intersections[10]),
-                  new Road (intersections[10],intersections[11])];
-ex_graph.cities = [new City (intersections[9]),
-                  new City (intersections[1])];
+                     new Intersection (1370/2,105/2),
+                     new Intersection (1188/2,392/2),
+                     new Intersection (934/2,400/2),
+                     new Intersection (1197/2,645/2),
+                     new Intersection (1587/2,954/2),
+                     new Intersection (663/2,542/2),
+                     new Intersection (664/2,802/2),
+                     new Intersection (892/2,688/2),
+                     new Intersection (405/2,962/2),
+                     new Intersection (908/2,933/2),
+                     new Intersection (1166/2,970/2)];
+map.roads = [new Road (intersections[1], intersections[0]),
+             new Road (intersections[1], intersections[2]),
+             new Road (intersections[0], intersections[3]),
+             new Road (intersections[2], intersections[3]),
+             new Road (intersections[5], intersections[4]),
+             new Road (intersections[4], intersections[2]),
+             new Road (intersections[3], intersections[6]),
+             new Road (intersections[6], intersections[7]),
+             new Road (intersections[8], intersections[4]),
+             new Road (intersections[8], intersections[7]),
+             new Road (intersections[7], intersections[9]),
+             new Road (intersections[7], intersections[10]),
+             new Road (intersections[8], intersections[10]),
+             new Road (intersections[10],intersections[11])];
+map.cities = [new City (intersections[9]),
+              new City (intersections[1])];
 
-let main = new Main (ex_graph);
+function makeRoadsDoublyLinked (m: Map) {
+    let newRoads: Road[] = []
+    for (let road of m.roads) {
+        newRoads.push (new Road (road.end, road.start));
+    }
+    m.roads = m.roads.concat (newRoads);
+}
+makeRoadsDoublyLinked (map);
+
+let main = new Main (map);
 main.update ();
