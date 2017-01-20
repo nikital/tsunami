@@ -1,6 +1,8 @@
 type Point = createjs.Point;
 let Point = createjs.Point;
 
+let g_speed = 1;
+
 function distance(p1: Intersection, p2: Intersection): number{
     let dx = p1.location.x - p2.location.x;
     let dy = p1.location.y - p2.location.y;
@@ -21,16 +23,24 @@ class Road {
     public carCount: number;
     public carCapacity: number;
     public enabled: boolean;
+    public distance: number;
 
     constructor (public start: Intersection, public end: Intersection) {
         start.roads.push(this);
         end.roads.push(this);
-        this.carCapacity = distance(this.start, this.end);
+        this.distance = distance(this.start, this.end);
         this.enabled = true;
     }
+    public baseTravelTime(): number{
+        return this.distance/g_speed;
+    }
 
-    travelTime():number{
-        return 
+    public travelTime():number{
+        let current_speed = g_speed;
+        if (this.carCount > this.carCapacity){
+            current_speed *= this.carCapacity/this.carCount; 
+        }
+        return this.distance / current_speed;
     }
 }
 
@@ -47,7 +57,18 @@ class Map {
 }
 
 class Car{
+    timer: number;
     constructor(public currentRoad: Road){
+        this.timer = this.currentRoad.travelTime();
+        this.update();
+    }
+
+    public update(){
+        this.timer--;
+        if(this.timer != 0){
+            return;
+        }
+        this.currentRoad.end.roads
     }
 }
 
