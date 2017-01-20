@@ -162,15 +162,23 @@ class MapRenderer extends createjs.Container {
     }
 
     render_road (road: Road, g: createjs.Graphics) {
-        g.setStrokeStyle (10, 'round');
+        let width = 5;
+
+        let dx = road.end.location.x - road.start.location.x;
+        let dy = road.end.location.y - road.start.location.y;
+        let orthox = -dy/road.distance * width;
+        let orthoy = dx/road.distance * width;
+
+        g.clear ();
+        g.setStrokeStyle (width * 2+1, 'round');
         g.beginStroke (road.enabled ? '#aaaaaa' : 'red');
-        g.moveTo (road.start.location.x, road.start.location.y);
-        g.lineTo (road.end.location.x, road.end.location.y);
+        g.moveTo (road.start.location.x + orthox, road.start.location.y + orthoy);
+        g.lineTo (road.end.location.x + orthox, road.end.location.y + orthoy);
         g.endStroke ();
         g.setStrokeStyle (1);
         g.beginStroke ('black');
-        g.moveTo (road.start.location.x, road.start.location.y);
-        g.lineTo (road.end.location.x, road.end.location.y);
+        g.moveTo (road.start.location.x + orthox, road.start.location.y + orthoy);
+        g.lineTo (road.end.location.x + orthox, road.end.location.y + orthoy);
         g.endStroke ();
     }
 }
