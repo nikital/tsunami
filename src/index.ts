@@ -36,6 +36,9 @@ class Road {
 
 class City{
     public intersections: Intersection[];
+    constructor (intersection: Intersection) {
+        this.intersections = [intersection];
+    }
 }
 
 class Map {
@@ -72,7 +75,7 @@ class MapRenderer extends createjs.Shape {
         g.clear ();
         for (let city of map.cities) {
             g.beginFill ('black');
-            g.drawCircle (city.intersections[0].location.x, city.intersections[0].location.y, 5);
+            g.drawCircle (city.intersections[0].location.x, city.intersections[0].location.y, 10);
             g.endFill ();
         }
         for (let road of map.roads) {
@@ -111,6 +114,8 @@ ex_graph.roads = [new Road (intersections[1], intersections[0]),
                   new Road (intersections[7], intersections[10]),
                   new Road (intersections[8], intersections[10]),
                   new Road (intersections[10],intersections[11])];
+ex_graph.cities = [new City (intersections[9]),
+                  new City (intersections[1])];
 
 let main = new Main (ex_graph);
 main.update ();
