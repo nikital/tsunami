@@ -53,6 +53,7 @@ class Road {
 
 class City{
     public intersections: Intersection[];
+    public evacuate: City;
     constructor (intersection: Intersection) {
         this.intersections = [intersection];
     }
@@ -105,15 +106,14 @@ class Car{
 }
 
 class Main extends createjs.Stage {
-    graphRenderer: MapRenderer;
+    renderer: MapRenderer;
 
     constructor (map: Map) {
         super ('main-canvas');
+        this.enableMouseOver ();
 
-        this.graphRenderer = new MapRenderer ();
-        this.addChild (this.graphRenderer);
-
-        this.graphRenderer.render (map);
+        this.renderer = new MapRenderer (map);
+        this.addChild (this.renderer);
     }
 
     update () {
@@ -122,20 +122,33 @@ class Main extends createjs.Stage {
     }
 }
 
-class MapRenderer extends createjs.Shape {
-    render (map: Map) {
-        let g = this.graphics;
-        g.clear ();
-        for (let city of map.cities) {
-            g.beginFill ('black');
-            g.drawCircle (city.intersections[0].location.x, city.intersections[0].location.y, 10);
-            g.endFill ();
-        }
+class MapRenderer extends createjs.Container {
+    constructor (private map: Map) {
+        super ();
         for (let road of map.roads) {
+            let roadShape = new createjs.Shape ();
+            roadShape.cursor = 'pointer';
+            let g = roadShape.graphics;
+            g.setStrokeStyle (10, 'round');
+            g.beginStroke ('#aaaaaa');
+            g.moveTo (road.start.location.x, road.start.location.y);
+            g.lineTo (road.end.location.x, road.end.location.y);
+            g.endStroke ();
+            g.setStrokeStyle (1);
             g.beginStroke ('black');
             g.moveTo (road.start.location.x, road.start.location.y);
             g.lineTo (road.end.location.x, road.end.location.y);
             g.endStroke ();
+            this.addChild (roadShape);
+        }
+        for (let city of map.cities) {
+            let cityShape = new createjs.Shape ();
+            cityShape.cursor = 'pointer';
+            let g = cityShape.graphics;
+            g.beginFill ('black');
+            g.drawCircle (city.intersections[0].location.x, city.intersections[0].location.y, 10);
+            g.endFill ();
+            this.addChild (cityShape);
         }
     }
 }
