@@ -69,6 +69,16 @@ enum CarState{
     Merging
 }
 
+class AStarIntersection{
+    gScore: number;
+    fScore: number;
+
+    constructor(public intersection:Intersection, public sourceIntersection: AStarIntersection, hScore: number ){
+        this.gScore = distance(this.intersection, this.sourceIntersection.intersection) + this.sourceIntersection.gScore;
+        this.fScore = this.gScore + hScore;
+    }
+}
+
 class Car{
     timer: number;
     state: CarState;
@@ -100,8 +110,44 @@ class Car{
         }
     }
 
+    private reconstructPath(aStarIntersection: AStarIntersection): Road{
+        while(aStarIntersection.sourceIntersection.gScore != 0){
+            aStarIntersection = aStarIntersection.sourceIntersection;
+        }
+        return this.currentRoad.end.roads.filter(road => road.end == aStarIntersection.intersection)[0];
+    }
+
     private getNextRoad(){
-        this.nextRoad = this.currentRoad.end.roads[0];
+        let closedSet = [];
+        let openSet = [];
+        let current = new AStarIntersection(this.currentRoad.end,  new AStarIntersection(this.currentRoad.end, null, 0), 9999999);
+        openSet.push(current);
+        while(openSet.length > 0)
+        {
+            openSet.sort(function(a: AStarIntersection, b: AStarIntersection){return a.fScore - b.fScore;}).reverse();
+            let lowestFScoreIntersection : AStarIntersection = openSet.pop();
+            if (lowestFScoreIntersection.intersection == this.destination.intersections[0]){
+                this.nextRoad = this.reconstructPath(lowestFScoreIntersection);
+                return;
+            }
+            closedSet.push(lowestFScoreIntersection);
+            for (let road of lowestFScoreIntersection.intersection.roads.filter(road => road.enabled)){
+                if (closedSet.map(intersection => intersection.intersection).indexOf(road.end) != -1){
+                    continue;
+                }
+                let currentNeighborIntersection = new AStarIntersection(road.end, lowestFScoreIntersection, distance(road.end, this.destination.intersections[0]));
+                let currentNeighborIntersectionIndex: number = openSet.map(intersection => intersection.intersection).indexOf(road.end);
+                if(currentNeighborIntersectionIndex == -1){
+                    openSet.push(currentNeighborIntersection);
+                    continue;
+                }
+
+                if (currentNeighborIntersection.gScore  >= openSet[currentNeighborIntersectionIndex].gScore){
+                    continue;
+                }
+                openSet[currentNeighborIntersectionIndex] = currentNeighborIntersection;
+            }
+        }
     }
 }
 
