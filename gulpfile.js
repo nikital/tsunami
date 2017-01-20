@@ -13,7 +13,7 @@ gulp.task('build:client', function () {
         .pipe(tsProject())
     return tsResult.js
         .pipe(sourcemaps.write())
-        .pipe(gulp.dest(path.resolve('./out')))
+        .pipe(gulp.dest(path.resolve('./js')))
 });
 
 gulp.task('watch:client', ['build:client'], function () {
