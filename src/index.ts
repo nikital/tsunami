@@ -74,7 +74,8 @@ class Map {
 
 enum CarState{
     Traveling,
-    Merging
+    Merging,
+    Done
 }
 
 class AStarIntersection{
@@ -112,6 +113,14 @@ class Car{
 
         switch(this.state){
             case CarState.Traveling:
+                if (this.currentRoad.end == this.destination.intersections[0])
+                {
+                    console.log("Car is done!");
+                    this.state = CarState.Done;
+                    map.cars.splice(map.cars.indexOf(this), 1);
+                    this.currentRoad.carCount--;
+                    return;
+                }
                 this.getNextRoad();
                 this.timer = this.nextRoad.mergeTime();
                 this.state = CarState.Merging;
