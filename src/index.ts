@@ -35,7 +35,7 @@ class Road {
         return this.distance/g_speed;
     }
 
-    public travelTime():number{
+    public travelTime(): number{
         let current_speed = g_speed;
         if (this.carCount > this.carCapacity){
             current_speed *= this.carCapacity/this.carCount; 
@@ -43,7 +43,7 @@ class Road {
         return this.distance / current_speed;
     }
 
-    public mergeTime():number{
+    public mergeTime(): number{
         if (this.carCapacity > this.carCount){
             return 0;
         }
@@ -73,27 +73,34 @@ class Car{
     state: CarState;
     nextRoad: Road;
 
-    constructor(public currentRoad: Road){
+    constructor(public currentRoad: Road, public destination: City){
         this.timer = this.currentRoad.travelTime();
+        this.currentRoad.carCount++;
         this.state = CarState.Traveling;
-        this.update();
     }
 
     public update(){
         this.timer--;
-        if(this.timer != 0){
+        if(this.timer > 0){
             return;
         }
 
         switch(this.state){
             case CarState.Traveling:
-                //TODO: calculate A* and choose the next road
-                this.nextRoad = new Road(new Intersection(0,0), new Intersection(0,0))
-                timer = 
+                this.timer = this.nextRoad.mergeTime();
+                this.state = CarState.Merging;
                 break;
             case CarState.Merging:
+                this.currentRoad.carCount--;
+                this.currentRoad = this.nextRoad;
+                this.currentRoad.carCount++;
+                this.timer = this.currentRoad.travelTime();
                 break;
         }
+    }
+
+    private getNextRoad(){
+        this.nextRoad = this.currentRoad.end.roads[0];
     }
 }
 
