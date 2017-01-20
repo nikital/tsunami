@@ -30,6 +30,7 @@ class Road {
         this.distance = distance(this.start, this.end);
         this.enabled = true;
     }
+
     public baseTravelTime(): number{
         return this.distance/g_speed;
     }
@@ -55,10 +56,18 @@ class Map {
     public cities: City[] = [];
 }
 
+enum CarState{
+    Traveling,
+    Merging
+}
+
 class Car{
     timer: number;
+    state: CarState;
+
     constructor(public currentRoad: Road){
         this.timer = this.currentRoad.travelTime();
+        this.state = CarState.Traveling;
         this.update();
     }
 
@@ -67,7 +76,14 @@ class Car{
         if(this.timer != 0){
             return;
         }
-        this.currentRoad.end.roads
+
+        switch(this.state){
+            case CarState.Traveling:
+                //TODO: calculate A* and choose the next road
+                break;
+            case CarState.Merging:
+                break;
+        }
     }
 }
 
