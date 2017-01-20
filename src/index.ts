@@ -122,24 +122,24 @@ class Main extends createjs.Stage {
     }
 }
 
+class Container<T> extends createjs.Container {
+    constructor (public child: createjs.DisplayObject, public data: T) {
+        super ();
+        this.addChild (child);
+    }
+}
+
 class MapRenderer extends createjs.Container {
     constructor (private map: Map) {
         super ();
         for (let road of map.roads) {
             let roadShape = new createjs.Shape ();
             roadShape.cursor = 'pointer';
-            let g = roadShape.graphics;
-            g.setStrokeStyle (10, 'round');
-            g.beginStroke ('#aaaaaa');
-            g.moveTo (road.start.location.x, road.start.location.y);
-            g.lineTo (road.end.location.x, road.end.location.y);
-            g.endStroke ();
-            g.setStrokeStyle (1);
-            g.beginStroke ('black');
-            g.moveTo (road.start.location.x, road.start.location.y);
-            g.lineTo (road.end.location.x, road.end.location.y);
-            g.endStroke ();
-            this.addChild (roadShape);
+            this.render_road (road, roadShape.graphics);
+
+            let container = new Container (roadShape, road);
+            this.addChild (container);
+            container.on ('click', this.on_road.bind (this));
         }
         for (let city of map.cities) {
             let cityShape = new createjs.Shape ();
@@ -148,8 +148,30 @@ class MapRenderer extends createjs.Container {
             g.beginFill ('black');
             g.drawCircle (city.intersections[0].location.x, city.intersections[0].location.y, 10);
             g.endFill ();
-            this.addChild (cityShape);
+
+            let container = new Container (cityShape, city);
+            this.addChild (container);
+
         }
+    }
+    on_road (e:createjs.MouseEvent) {
+        let road: Road = e.currentTarget.data;
+        let roadShape: createjs.Shape = e.currentTarget.child;
+        road.enabled = !road.enabled;
+        this.render_road (road, roadShape.graphics);
+    }
+
+    render_road (road: Road, g: createjs.Graphics) {
+        g.setStrokeStyle (10, 'round');
+        g.beginStroke (road.enabled ? '#aaaaaa' : 'red');
+        g.moveTo (road.start.location.x, road.start.location.y);
+        g.lineTo (road.end.location.x, road.end.location.y);
+        g.endStroke ();
+        g.setStrokeStyle (1);
+        g.beginStroke ('black');
+        g.moveTo (road.start.location.x, road.start.location.y);
+        g.lineTo (road.end.location.x, road.end.location.y);
+        g.endStroke ();
     }
 }
 
