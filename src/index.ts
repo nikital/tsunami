@@ -29,6 +29,8 @@ class Road {
         start.roads.push(this);
         this.distance = distance(this.start, this.end);
         this.enabled = true;
+        this.carCount = 0;
+        this.carCapacity = this.distance;
     }
 
     public baseTravelTime(): number{
@@ -54,12 +56,18 @@ class Road {
 class City{
     public intersections: Intersection[];
     public evacuate: City;
+
     constructor (intersection: Intersection) {
         this.intersections = [intersection];
     }
+
+    public GiveBirthToACar(destination: City){
+        map.cars.push(new Car(this.intersections[0].roads[0], destination));
+    } 
 }
 
 class Map {
+    public cars: Car[] =[];
     public roads: Road[] = [];
     public cities: City[] = [];
 }
@@ -74,7 +82,12 @@ class AStarIntersection{
     fScore: number;
 
     constructor(public intersection:Intersection, public sourceIntersection: AStarIntersection, hScore: number ){
+        if(this.sourceIntersection == null){
+            this.gScore = 0;
+        }
+        else{
         this.gScore = distance(this.intersection, this.sourceIntersection.intersection) + this.sourceIntersection.gScore;
+        }
         this.fScore = this.gScore + hScore;
     }
 }
@@ -92,12 +105,14 @@ class Car{
 
     public update(){
         this.timer--;
+        console.log("time: " , this.timer , "state: " , this.state , " current road: " , this.currentRoad);
         if(this.timer > 0){
             return;
         }
 
         switch(this.state){
             case CarState.Traveling:
+                this.getNextRoad();
                 this.timer = this.nextRoad.mergeTime();
                 this.state = CarState.Merging;
                 break;
@@ -106,6 +121,7 @@ class Car{
                 this.currentRoad = this.nextRoad;
                 this.currentRoad.carCount++;
                 this.timer = this.currentRoad.travelTime();
+                this.state = CarState.Traveling;
                 break;
         }
     }
@@ -164,6 +180,9 @@ class Main extends createjs.Stage {
 
     update () {
         super.update ();
+        for(let car of map.cars){
+            car.update();
+        }
         requestAnimationFrame (this.update.bind (this));
     }
 }
@@ -270,3 +289,4 @@ makeRoadsDoublyLinked (map);
 
 let main = new Main (map);
 main.update ();
+map.cities[0].GiveBirthToACar(map.cities[1]);
