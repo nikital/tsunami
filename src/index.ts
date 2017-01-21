@@ -34,7 +34,7 @@ class Road {
         this.distance = distance(this.start, this.end);
         this.enabled = true;
         this.carCount = 0;
-        this.carCapacity = this.distance/10;
+        this.carCapacity = this.distance/20;
         this.waitingCars = [];
     }
 
@@ -92,7 +92,7 @@ class Map {
 
 enum CarState{
     Traveling,
-    Waiting,
+    Blocked,
     Merging,
     Done
 }
@@ -133,7 +133,7 @@ class Car{
         }
 
         switch(this.state){
-            case CarState.Waiting:
+            case CarState.Blocked:
             case CarState.Traveling:
                 if(this.destination.intersections.indexOf(this.currentRoad.end) != -1)
                 {
@@ -162,16 +162,22 @@ class Car{
     }
 
     private decideWhatsNext(){
-        this.getNextRoad();
-        if(this.nextRoad == null)
+        let possibleNextRoad = this.getNextRoad();
+        if(possibleNextRoad == null)
         {
             this.timer = 10;
-            this.state = CarState.Waiting;
+            this.state = CarState.Blocked;
             return;
         }
 
-        this.nextRoad.addWaitingCar(this);
-        this.timerStartValue = this.timer = 30;
+        if(possibleNextRoad != this.nextRoad){
+            if(this.nextRoad != null){
+                this.nextRoad.removeWaitingCar(this);
+            }
+            this.nextRoad = possibleNextRoad;
+            this.nextRoad.addWaitingCar(this);
+        }
+        // this.timerStartValue = this.timer = 1;
         this.state = CarState.Merging;
     }
 
@@ -182,7 +188,7 @@ class Car{
         return this.currentRoad.end.roads.filter(road => road.end == aStarIntersection.intersection)[0];
     }
 
-    private getNextRoad(){
+    private getNextRoad(): Road{
         let closedSet = [];
         let openSet = [];
         let current = new AStarIntersection(this.currentRoad.end,  new AStarIntersection(this.currentRoad.end, null, 0, 0), 9999999, 0);
@@ -192,8 +198,7 @@ class Car{
             openSet.sort(function(a: AStarIntersection, b: AStarIntersection){return a.fScore - b.fScore;}).reverse();
             let lowestFScoreIntersection : AStarIntersection = openSet.pop();
             if (lowestFScoreIntersection.intersection == this.destination.intersections[0]){
-                this.nextRoad = this.reconstructPath(lowestFScoreIntersection);
-                return;
+                return this.reconstructPath(lowestFScoreIntersection);
             }
             closedSet.push(lowestFScoreIntersection);
             for (let road of lowestFScoreIntersection.intersection.roads){
@@ -332,7 +337,7 @@ class MapRenderer extends createjs.Container {
                 carx = road.start.location.x + dx;
                 cary = road.start.location.y + dy;
             }
-            else if (car.state == CarState.Merging || car.state == CarState.Waiting) {
+            else if (car.state == CarState.Merging || car.state == CarState.Blocked) {
                 let dx = road.end.location.x - road.start.location.x;
                 let dy = road.end.location.y - road.start.location.y;
                 dx /= road.distance;
