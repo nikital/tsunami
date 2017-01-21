@@ -223,7 +223,7 @@ class Main extends createjs.Stage {
         }
         let hazardousCities = map.cities.filter(city => city.isHitByTsunami);     
         hazardousCities[Math.floor(Math.random() * hazardousCities.length)].GiveBirthToACar();
-        this.carTimer = 100;
+        this.carTimer = 10;
     }
 
     private updateCars(){
@@ -348,6 +348,7 @@ map.roads = [new Road (intersections[1], intersections[0]),
              new Road (intersections[8], intersections[10]),
              new Road (intersections[10],intersections[11])];
 map.cities = [new City ([intersections[9]], true),
+              new City ([intersections[5]], true),
               new City ([intersections[1]], false)];
 
 function makeRoadsDoublyLinked (m: Map) {
