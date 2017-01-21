@@ -34,7 +34,7 @@ class Road {
         this.distance = distance(this.start, this.end);
         this.enabled = true;
         this.carCount = 0;
-        this.carCapacity = this.distance;
+        this.carCapacity = this.distance/10;
         this.waitingCars = [];
     }
 
@@ -143,12 +143,12 @@ class Car{
                     this.currentRoad.carCount--;
                     return;
                 }
-                this.deciveWhatsNext();
+                this.decideWhatsNext();
                 break;
             case CarState.Merging:
                 if(!this.nextRoad.isNextInLine(this))
                 {
-                    this.deciveWhatsNext();
+                    this.decideWhatsNext();
                     break;
                 }
                 this.currentRoad.carCount--;
@@ -161,7 +161,7 @@ class Car{
         }
     }
 
-    private deciveWhatsNext(){
+    private decideWhatsNext(){
         this.getNextRoad();
         if(this.nextRoad == null)
         {
@@ -171,7 +171,7 @@ class Car{
         }
 
         this.nextRoad.addWaitingCar(this);
-        this.timerStartValue = this.timer = 5
+        this.timerStartValue = this.timer = 30;
         this.state = CarState.Merging;
     }
 
