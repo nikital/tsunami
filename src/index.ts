@@ -26,6 +26,9 @@ class Road {
     public distance: number;
     public waitingCars: Car[];
 
+    // Used by rendering
+    renderedWaitingCars: number;
+
     constructor (public start: Intersection, public end: Intersection) {
         start.roads.push(this);
         this.distance = distance(this.start, this.end);
@@ -123,7 +126,7 @@ class Car{
         this.knownBlockedRoads = []
     }
 
-    public update(){
+    public update() {
         this.timer--;
         if(this.timer > 0){
             return;
@@ -309,23 +312,39 @@ class MapRenderer extends createjs.Container {
         }
     }
     update () {
+        // No cars rendered yet
+        for (let road of map.roads) {
+            road.renderedWaitingCars = 0;
+        }
         let g = this.cars.graphics;
         g.clear ();
         for (let car of map.cars) {
-            if (car.timerStartValue <= 0) continue;
-            let progress = 1 - car.timer / car.timerStartValue;
-            let ortho = this.ortho_offset_for_road (car.currentRoad, this.width);
+            let carx, cary;
+            let road = car.currentRoad;
+            let ortho = this.ortho_offset_for_road (road, this.width);
             if (car.state == CarState.Traveling) {
-                let dx = car.currentRoad.end.location.x - car.currentRoad.start.location.x;
-                let dy = car.currentRoad.end.location.y - car.currentRoad.start.location.y;
+                if (car.timerStartValue <= 0) continue;
+                let progress = 1 - car.timer / car.timerStartValue;
+                let dx = road.end.location.x - road.start.location.x;
+                let dy = road.end.location.y - road.start.location.y;
                 dx *= progress;
                 dy *= progress;
-                let carx = car.currentRoad.start.location.x + dx;
-                let cary = car.currentRoad.start.location.y + dy;
-                g.beginFill ('green');
-                g.drawCircle (carx + ortho.x, cary + ortho.y, 5);
-                g.endFill ();
+                carx = road.start.location.x + dx;
+                cary = road.start.location.y + dy;
             }
+            else if (car.state == CarState.Merging || car.state == CarState.Waiting) {
+                let dx = road.end.location.x - road.start.location.x;
+                let dy = road.end.location.y - road.start.location.y;
+                dx /= road.distance;
+                dy /= road.distance;
+                let space = 3;
+                carx = road.end.location.x - dx * space * road.renderedWaitingCars;
+                cary = road.end.location.y - dy * space * road.renderedWaitingCars;
+                road.renderedWaitingCars++;
+            }
+            g.beginFill ('green');
+            g.drawCircle (carx + ortho.x, cary + ortho.y, 5);
+            g.endFill ();
         }
     }
     on_road (e:createjs.MouseEvent) {
