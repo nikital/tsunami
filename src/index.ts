@@ -57,13 +57,21 @@ class City{
     public intersections: Intersection[];
     public evacuate: City;
 
-    constructor (intersection: Intersection) {
-        this.intersections = [intersection];
+    constructor (intersections: Intersection[], public isHitByTsunami: boolean) {
+        this.intersections = intersections;
     }
 
-    public GiveBirthToACar(destination: City){
-        map.cars.push(new Car(this.intersections[0].roads[0], destination));
-    } 
+    public GiveBirthToACar(){
+        //TODO: should the destination city be randomly selected? 
+        let possibleDestinations = map.cities.filter(city => city != this && city.isHitByTsunami == false);
+        let destinationIndex = Math.floor(Math.random() * possibleDestinations.length);
+        let intersectionIndex = Math.floor(Math.random() * this.intersections.length);
+        map.cars.push(new Car(this.intersections[intersectionIndex].roads[0], possibleDestinations[destinationIndex]));
+    }
+
+    //public GiveBirthToACar(destination: City){
+    //    map.cars.push(new Car(this.intersections[0].roads[0], destination));
+    //} 
 }
 
 class Map {
@@ -178,21 +186,38 @@ class Car{
 
 class Main extends createjs.Stage {
     renderer: MapRenderer;
+    carTimer: number;
 
     constructor (map: Map) {
         super ('main-canvas');
         this.enableMouseOver ();
-
+        this.carTimer = 1;
         this.renderer = new MapRenderer (map);
         this.addChild (this.renderer);
-    }
+    
+}
 
     update () {
         super.update ();
+        this.spawnCar ();
+        this.updateCars ();
+        requestAnimationFrame (this.update.bind (this));
+    }
+
+    private spawnCar(){
+        this.carTimer--;
+        if(this.carTimer > 0){
+            return;
+        }
+        let hazardousCities = map.cities.filter(city => city.isHitByTsunami);     
+        hazardousCities[Math.floor(Math.random() * hazardousCities.length)].GiveBirthToACar();
+        this.carTimer = 100;
+    }
+
+    private updateCars(){
         for(let car of map.cars){
             car.update();
         }
-        requestAnimationFrame (this.update.bind (this));
     }
 }
 
@@ -284,8 +309,8 @@ map.roads = [new Road (intersections[1], intersections[0]),
              new Road (intersections[7], intersections[10]),
              new Road (intersections[8], intersections[10]),
              new Road (intersections[10],intersections[11])];
-map.cities = [new City (intersections[9]),
-              new City (intersections[1])];
+map.cities = [new City ([intersections[9]], true),
+              new City ([intersections[1]], false)];
 
 function makeRoadsDoublyLinked (m: Map) {
     let newRoads: Road[] = []
@@ -298,4 +323,3 @@ makeRoadsDoublyLinked (map);
 
 let main = new Main (map);
 main.update ();
-map.cities[0].GiveBirthToACar(map.cities[1]);
