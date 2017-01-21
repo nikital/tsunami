@@ -245,7 +245,7 @@ class MapRenderer extends createjs.Container {
             cityShape.cursor = 'pointer';
             let g = cityShape.graphics;
             g.beginFill ('black');
-            g.drawCircle (city.intersections[0].location.x, city.intersections[0].location.y, 10);
+            g.drawCircle (city.intersections[0].location.x, city.intersections[0].location.y, 20);
             g.endFill ();
 
             let container = new Container (cityShape, city);
@@ -261,7 +261,7 @@ class MapRenderer extends createjs.Container {
     }
 
     render_road (road: Road, g: createjs.Graphics) {
-        let width = 5;
+        let width = 10;
 
         let dx = road.end.location.x - road.start.location.x;
         let dy = road.end.location.y - road.start.location.y;
@@ -283,18 +283,18 @@ class MapRenderer extends createjs.Container {
 }
 
 let map = new Map ();
-let intersections = [new Intersection (935/2,100/2),
-                     new Intersection (1370/2,105/2),
-                     new Intersection (1188/2,392/2),
-                     new Intersection (934/2,400/2),
-                     new Intersection (1197/2,645/2),
-                     new Intersection (1587/2,954/2),
-                     new Intersection (663/2,542/2),
-                     new Intersection (664/2,802/2),
-                     new Intersection (892/2,688/2),
-                     new Intersection (405/2,962/2),
-                     new Intersection (908/2,933/2),
-                     new Intersection (1166/2,970/2)];
+let intersections = [new Intersection (935*3/4,100*3/4),
+                     new Intersection (1370*3/4,105*3/4),
+                     new Intersection (1188*3/4,392*3/4),
+                     new Intersection (934*3/4,400*3/4),
+                     new Intersection (1197*3/4,645*3/4),
+                     new Intersection (1587*3/4,954*3/4),
+                     new Intersection (663*3/4,542*3/4),
+                     new Intersection (664*3/4,802*3/4),
+                     new Intersection (892*3/4,688*3/4),
+                     new Intersection (405*3/4,962*3/4),
+                     new Intersection (908*3/4,933*3/4),
+                     new Intersection (1166*3/4,970*3/4)];
 map.roads = [new Road (intersections[1], intersections[0]),
              new Road (intersections[1], intersections[2]),
              new Road (intersections[0], intersections[3]),
