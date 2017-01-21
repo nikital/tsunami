@@ -241,6 +241,7 @@ class Container<T> extends createjs.Container {
 }
 
 class MapRenderer extends createjs.Container {
+    private width: number = 10;
     private cars = new createjs.Shape ();
     constructor (private map: Map) {
         super ();
@@ -259,7 +260,7 @@ class MapRenderer extends createjs.Container {
             cityShape.cursor = 'pointer';
             let g = cityShape.graphics;
             g.beginFill ('black');
-            g.drawCircle (city.intersections[0].location.x, city.intersections[0].location.y, 20);
+            g.drawCircle (city.intersections[0].location.x, city.intersections[0].location.y, this.width * 2);
             g.endFill ();
 
             let container = new Container (cityShape, city);
@@ -273,6 +274,7 @@ class MapRenderer extends createjs.Container {
         for (let car of map.cars) {
             if (car.timerStartValue <= 0) continue;
             let progress = 1 - car.timer / car.timerStartValue;
+            let ortho = this.ortho_offset_for_road (car.currentRoad, this.width);
             if (car.state == CarState.Traveling) {
                 let dx = car.currentRoad.end.location.x - car.currentRoad.start.location.x;
                 let dy = car.currentRoad.end.location.y - car.currentRoad.start.location.y;
@@ -281,7 +283,7 @@ class MapRenderer extends createjs.Container {
                 let carx = car.currentRoad.start.location.x + dx;
                 let cary = car.currentRoad.start.location.y + dy;
                 g.beginFill ('green');
-                g.drawCircle (carx, cary, 5);
+                g.drawCircle (carx + ortho.x, cary + ortho.y, 5);
                 g.endFill ();
             }
         }
@@ -294,24 +296,27 @@ class MapRenderer extends createjs.Container {
     }
 
     render_road (road: Road, g: createjs.Graphics) {
-        let width = 10;
-
-        let dx = road.end.location.x - road.start.location.x;
-        let dy = road.end.location.y - road.start.location.y;
-        let orthox = -dy/road.distance * width;
-        let orthoy = dx/road.distance * width;
+        let ortho = this.ortho_offset_for_road (road, this.width);
 
         g.clear ();
-        g.setStrokeStyle (width * 2+1, 'round');
+        g.setStrokeStyle (this.width * 2+1, 'round');
         g.beginStroke (road.enabled ? '#aaaaaa' : 'red');
-        g.moveTo (road.start.location.x + orthox, road.start.location.y + orthoy);
-        g.lineTo (road.end.location.x + orthox, road.end.location.y + orthoy);
+        g.moveTo (road.start.location.x + ortho.x, road.start.location.y + ortho.y);
+        g.lineTo (road.end.location.x + ortho.x, road.end.location.y + ortho.y);
         g.endStroke ();
         g.setStrokeStyle (1);
         g.beginStroke ('black');
-        g.moveTo (road.start.location.x + orthox, road.start.location.y + orthoy);
-        g.lineTo (road.end.location.x + orthox, road.end.location.y + orthoy);
+        g.moveTo (road.start.location.x + ortho.x, road.start.location.y + ortho.y);
+        g.lineTo (road.end.location.x + ortho.x, road.end.location.y + ortho.y);
         g.endStroke ();
+    }
+
+    ortho_offset_for_road (road:Road, offset:number):Point {
+        let dx = road.end.location.x - road.start.location.x;
+        let dy = road.end.location.y - road.start.location.y;
+        let orthox = -dy/road.distance * offset;
+        let orthoy = dx/road.distance * offset;
+        return new Point (orthox, orthoy);
     }
 }
 
