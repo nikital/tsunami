@@ -83,6 +83,7 @@ class Map {
 enum CarState{
     Traveling,
     Merging,
+    Waiting,
     Done
 }
 
@@ -121,6 +122,7 @@ class Car{
         }
 
         switch(this.state){
+            case CarState.Waiting:
             case CarState.Traveling:
                 if(this.destination.intersections.indexOf(this.currentRoad.end) != -1)
                 {
@@ -131,6 +133,13 @@ class Car{
                     return;
                 }
                 this.getNextRoad();
+                if(this.nextRoad == null)
+                {
+                    this.timer = 10;
+                    this.state = CarState.Waiting;
+                    break;
+                }
+
                 this.timerStartValue = this.timer = this.nextRoad.mergeTime();
                 this.state = CarState.Merging;
                 break;
@@ -182,6 +191,7 @@ class Car{
                 openSet[currentNeighborIntersectionIndex] = currentNeighborIntersection;
             }
         }
+        this.nextRoad = null;
     }
 }
 
