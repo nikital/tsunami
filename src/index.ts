@@ -103,11 +103,12 @@ class AStarIntersection{
 
 class Car{
     timer: number;
+    timerStartValue: number;
     state: CarState;
     nextRoad: Road;
 
     constructor(public currentRoad: Road, public destination: City){
-        this.timer = this.currentRoad.travelTime();
+        this.timerStartValue = this.timer = this.currentRoad.travelTime();
         this.currentRoad.carCount++;
         this.state = CarState.Traveling;
     }
@@ -130,14 +131,14 @@ class Car{
                     return;
                 }
                 this.getNextRoad();
-                this.timer = this.nextRoad.mergeTime();
+                this.timerStartValue = this.timer = this.nextRoad.mergeTime();
                 this.state = CarState.Merging;
                 break;
             case CarState.Merging:
                 this.currentRoad.carCount--;
                 this.currentRoad = this.nextRoad;
                 this.currentRoad.carCount++;
-                this.timer = this.currentRoad.travelTime();
+                this.timerStartValue = this.timer = this.currentRoad.travelTime();
                 this.state = CarState.Traveling;
                 break;
         }
@@ -198,10 +199,11 @@ class Main extends createjs.Stage {
 }
 
     update () {
-        super.update ();
         this.spawnCar ();
         this.updateCars ();
-        requestAnimationFrame (this.update.bind (this));
+        this.renderer.update ();
+        super.update ();
+        setTimeout (this.update.bind (this), 1000/30);
     }
 
     private spawnCar(){
@@ -229,6 +231,7 @@ class Container<T> extends createjs.Container {
 }
 
 class MapRenderer extends createjs.Container {
+    private cars = new createjs.Shape ();
     constructor (private map: Map) {
         super ();
         for (let road of map.roads) {
@@ -240,6 +243,7 @@ class MapRenderer extends createjs.Container {
             this.addChild (container);
             container.on ('click', this.on_road.bind (this));
         }
+        this.addChild (this.cars);
         for (let city of map.cities) {
             let cityShape = new createjs.Shape ();
             cityShape.cursor = 'pointer';
@@ -251,6 +255,25 @@ class MapRenderer extends createjs.Container {
             let container = new Container (cityShape, city);
             this.addChild (container);
 
+        }
+    }
+    update () {
+        let g = this.cars.graphics;
+        g.clear ();
+        for (let car of map.cars) {
+            if (car.timerStartValue <= 0) continue;
+            let progress = 1 - car.timer / car.timerStartValue;
+            if (car.state == CarState.Traveling) {
+                let dx = car.currentRoad.end.location.x - car.currentRoad.start.location.x;
+                let dy = car.currentRoad.end.location.y - car.currentRoad.start.location.y;
+                dx *= progress;
+                dy *= progress;
+                let carx = car.currentRoad.start.location.x + dx;
+                let cary = car.currentRoad.start.location.y + dy;
+                g.beginFill ('green');
+                g.drawCircle (carx, cary, 5);
+                g.endFill ();
+            }
         }
     }
     on_road (e:createjs.MouseEvent) {
@@ -283,18 +306,18 @@ class MapRenderer extends createjs.Container {
 }
 
 let map = new Map ();
-let intersections = [new Intersection (935*3/4,100*3/4),
-                     new Intersection (1370*3/4,105*3/4),
-                     new Intersection (1188*3/4,392*3/4),
-                     new Intersection (934*3/4,400*3/4),
-                     new Intersection (1197*3/4,645*3/4),
-                     new Intersection (1587*3/4,954*3/4),
-                     new Intersection (663*3/4,542*3/4),
-                     new Intersection (664*3/4,802*3/4),
-                     new Intersection (892*3/4,688*3/4),
-                     new Intersection (405*3/4,962*3/4),
-                     new Intersection (908*3/4,933*3/4),
-                     new Intersection (1166*3/4,970*3/4)];
+let intersections = [new Intersection (935*5/8,100*5/8),
+                     new Intersection (1370*5/8,105*5/8),
+                     new Intersection (1188*5/8,392*5/8),
+                     new Intersection (934*5/8,400*5/8),
+                     new Intersection (1197*5/8,645*5/8),
+                     new Intersection (1587*5/8,954*5/8),
+                     new Intersection (663*5/8,542*5/8),
+                     new Intersection (664*5/8,802*5/8),
+                     new Intersection (892*5/8,688*5/8),
+                     new Intersection (405*5/8,962*5/8),
+                     new Intersection (908*5/8,933*5/8),
+                     new Intersection (1166*5/8,970*5/8)];
 map.roads = [new Road (intersections[1], intersections[0]),
              new Road (intersections[1], intersections[2]),
              new Road (intersections[0], intersections[3]),
