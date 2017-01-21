@@ -121,7 +121,7 @@ class Car{
 
         switch(this.state){
             case CarState.Traveling:
-                if (this.currentRoad.end == this.destination.intersections[0])
+                if(this.destination.intersections.indexOf(this.currentRoad.end) != -1)
                 {
                     console.log("Car is done!");
                     this.state = CarState.Done;
