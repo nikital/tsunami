@@ -24,6 +24,7 @@ class Road {
     public carCapacity: number;
     public enabled: boolean;
     public distance: number;
+    public waitingCars: Car[];
 
     constructor (public start: Intersection, public end: Intersection) {
         start.roads.push(this);
@@ -31,6 +32,7 @@ class Road {
         this.enabled = true;
         this.carCount = 0;
         this.carCapacity = this.distance;
+        this.waitingCars = [];
     }
 
     public baseTravelTime(): number{
@@ -45,11 +47,16 @@ class Road {
         return this.distance / current_speed;
     }
 
-    public mergeTime(): number{
-        if (this.carCapacity > this.carCount){
-            return 0;
-        }
-        return (this.carCount / this.carCapacity) * this.baseTravelTime();
+    public addWaitingCar(car: Car){
+        this.waitingCars.push(car);
+    }
+
+    public removeWaitingCar(car: Car){
+        this.waitingCars.splice(this.waitingCars.indexOf(car),1);
+    }
+
+    public isNextInLine( car: Car): boolean{
+        return this.waitingCars.indexOf(car) == 0;
     }
 }
 
@@ -82,8 +89,8 @@ class Map {
 
 enum CarState{
     Traveling,
-    Merging,
     Waiting,
+    Merging,
     Done
 }
 
@@ -91,12 +98,12 @@ class AStarIntersection{
     gScore: number;
     fScore: number;
 
-    constructor(public intersection:Intersection, public sourceIntersection: AStarIntersection, hScore: number ){
+    constructor(public intersection:Intersection, public sourceIntersection: AStarIntersection, hScore: number, gScoreAdder: number ){
         if(this.sourceIntersection == null){
             this.gScore = 0;
         }
         else{
-        this.gScore = distance(this.intersection, this.sourceIntersection.intersection) + this.sourceIntersection.gScore;
+        this.gScore = distance(this.intersection, this.sourceIntersection.intersection) + this.sourceIntersection.gScore + gScoreAdder;
         }
         this.fScore = this.gScore + hScore;
     }
@@ -107,16 +114,17 @@ class Car{
     timerStartValue: number;
     state: CarState;
     nextRoad: Road;
+    knownBlockedRoads: Road[];
 
     constructor(public currentRoad: Road, public destination: City){
         this.timerStartValue = this.timer = this.currentRoad.travelTime();
         this.currentRoad.carCount++;
         this.state = CarState.Traveling;
+        this.knownBlockedRoads = []
     }
 
     public update(){
         this.timer--;
-        console.log("time: " , this.timer , "state: " , this.state , " current road: " , this.currentRoad);
         if(this.timer > 0){
             return;
         }
@@ -132,25 +140,36 @@ class Car{
                     this.currentRoad.carCount--;
                     return;
                 }
-                this.getNextRoad();
-                if(this.nextRoad == null)
-                {
-                    this.timer = 10;
-                    this.state = CarState.Waiting;
-                    break;
-                }
-
-                this.timerStartValue = this.timer = this.nextRoad.mergeTime();
-                this.state = CarState.Merging;
+                this.deciveWhatsNext();
                 break;
             case CarState.Merging:
+                if(!this.nextRoad.isNextInLine(this))
+                {
+                    this.deciveWhatsNext();
+                    break;
+                }
                 this.currentRoad.carCount--;
                 this.currentRoad = this.nextRoad;
                 this.currentRoad.carCount++;
+                this.currentRoad.removeWaitingCar(this);
                 this.timerStartValue = this.timer = this.currentRoad.travelTime();
                 this.state = CarState.Traveling;
                 break;
         }
+    }
+
+    private deciveWhatsNext(){
+        this.getNextRoad();
+        if(this.nextRoad == null)
+        {
+            this.timer = 10;
+            this.state = CarState.Waiting;
+            return;
+        }
+
+        this.nextRoad.addWaitingCar(this);
+        this.timerStartValue = this.timer = 5
+        this.state = CarState.Merging;
     }
 
     private reconstructPath(aStarIntersection: AStarIntersection): Road{
@@ -163,7 +182,7 @@ class Car{
     private getNextRoad(){
         let closedSet = [];
         let openSet = [];
-        let current = new AStarIntersection(this.currentRoad.end,  new AStarIntersection(this.currentRoad.end, null, 0), 9999999);
+        let current = new AStarIntersection(this.currentRoad.end,  new AStarIntersection(this.currentRoad.end, null, 0, 0), 9999999, 0);
         openSet.push(current);
         while(openSet.length > 0)
         {
@@ -174,11 +193,32 @@ class Car{
                 return;
             }
             closedSet.push(lowestFScoreIntersection);
-            for (let road of lowestFScoreIntersection.intersection.roads.filter(road => road.enabled)){
+            for (let road of lowestFScoreIntersection.intersection.roads){
                 if (closedSet.map(intersection => intersection.intersection).indexOf(road.end) != -1){
                     continue;
                 }
-                let currentNeighborIntersection = new AStarIntersection(road.end, lowestFScoreIntersection, distance(road.end, this.destination.intersections[0]));
+
+                let gScoreAdder = 0;
+                if(lowestFScoreIntersection == current){
+                    if(!road.enabled)
+                    {
+                        if(this.knownBlockedRoads.indexOf(road) == -1){
+                            this.knownBlockedRoads.push(road);
+                        }
+                        continue;
+                    }
+                    if(this.knownBlockedRoads.indexOf(road) != -1){
+                        this.knownBlockedRoads.splice(this.knownBlockedRoads.indexOf(road),1)
+                    }
+                    gScoreAdder =  (road.carCount + road.waitingCars.length) ;
+                }
+                else{
+                    if(this.knownBlockedRoads.indexOf(road) != -1){
+                        gScoreAdder = road.distance * 1000;
+                    }
+                }
+
+                let currentNeighborIntersection = new AStarIntersection(road.end, lowestFScoreIntersection, distance(road.end, this.destination.intersections[0]), gScoreAdder);
                 let currentNeighborIntersectionIndex: number = openSet.map(intersection => intersection.intersection).indexOf(road.end);
                 if(currentNeighborIntersectionIndex == -1){
                     openSet.push(currentNeighborIntersection);
